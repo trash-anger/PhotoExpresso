@@ -15,6 +15,21 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::auth();
 
-Route::get('/home', 'HomeController@index');
+
+Route::group(['middleware' => 'web'], function () {
+    Route::auth();
+
+    Route::get('/home', 'HomeController@index');
+
+    Route::resource('adresse', 'AdresseController');
+    Route::resource('client', 'ClientController');
+    Route::resource('codeReduction', 'CodeReductionController');
+    Route::resource('commande', 'CommandeController');
+    Route::resource('format', 'FormatController');
+    Route::resource('fraisPort', 'FraisPortController');
+    Route::resource('messageAccomp', 'MessageAccompController');
+    Route::resource('message', 'MessageController');
+    Route::resource('photo', 'PhotoController');
+    Route::resource('user', 'UserController');
+});
