@@ -2,85 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\FormatCreateRequest;
+use App\Http\Requests\FormatUpdateRequest;
 
-use App\Http\Requests;
+use App\Repositories\FormatRepository;
+
+use Illuminate\Http\Request;
 
 class FormatController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
+    protected $formatRepository;
+
+    protected $nbrPerPage = 4;
+
+    public function __construct(FormatRepository $formatRepository)
+    {
+        $this->formatRepository = $formatRepository;
+    }
+
     public function index()
     {
-        //
+        $formats = $this->formatRepository->getPaginate($this->nbrPerPage);
+        $links = $formats->render();
+
+        return view('index', compact('formats', 'links'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view('create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function store(FormatCreateRequest $request)
     {
-        //
+        $this->setAdmin($request);
+
+        $format = $this->formatRepository->store($request->all());
+
+        return redirect('format')->withOk("L'utilisateur " . $format->name . " a été créé.");
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        //
+        $format = $this->formatRepository->getById($id);
+
+        return view('show',  compact('format'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
-        //
+        $format = $this->formatRepository->getById($id);
+
+        return view('edit',  compact('format'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update(FormatUpdateRequest $request, $id)
     {
-        //
+        $this->setAdmin($request);
+
+        $this->formatRepository->update($id, $request->all());
+
+        return redirect('format')->withOk("L'utilisateur " . $request->input('name') . " a été modifié.");
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        //
+        $this->formatRepository->destroy($id);
+
+        return redirect()->back();
     }
+
+
+
 }

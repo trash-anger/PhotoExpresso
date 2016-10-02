@@ -2,85 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\PhotoCreateRequest;
+use App\Http\Requests\PhotoUpdateRequest;
 
-use App\Http\Requests;
+use App\Repositories\PhotoRepository;
+
+use Illuminate\Http\Request;
 
 class PhotoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
+    protected $photoRepository;
+
+    protected $nbrPerPage = 4;
+
+    public function __construct(PhotoRepository $photoRepository)
+    {
+        $this->photoRepository = $photoRepository;
+    }
+
     public function index()
     {
-        //
+        $photos = $this->photoRepository->getPaginate($this->nbrPerPage);
+        $links = $photos->render();
+
+        return view('index', compact('photos', 'links'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view('create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function store(PhotoCreateRequest $request)
     {
-        //
+        $this->setAdmin($request);
+
+        $photo = $this->photoRepository->store($request->all());
+
+        return redirect('photo')->withOk("L'utilisateur " . $photo->name . " a été créé.");
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        //
+        $photo = $this->photoRepository->getById($id);
+
+        return view('show',  compact('photo'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
-        //
+        $photo = $this->photoRepository->getById($id);
+
+        return view('edit',  compact('photo'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update(PhotoUpdateRequest $request, $id)
     {
-        //
+        $this->setAdmin($request);
+
+        $this->photoRepository->update($id, $request->all());
+
+        return redirect('photo')->withOk("L'utilisateur " . $request->input('name') . " a été modifié.");
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        //
+        $this->photoRepository->destroy($id);
+
+        return redirect()->back();
     }
+
+
+
 }

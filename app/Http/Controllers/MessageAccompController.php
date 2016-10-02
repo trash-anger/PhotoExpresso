@@ -2,85 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\MessageAccompCreateRequest;
+use App\Http\Requests\MessageAccompUpdateRequest;
 
-use App\Http\Requests;
+use App\Repositories\MessageAccompRepository;
+
+use Illuminate\Http\Request;
 
 class MessageAccompController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
+    protected $messageAccompRepository;
+
+    protected $nbrPerPage = 4;
+
+    public function __construct(MessageAccompRepository $messageAccompRepository)
+    {
+        $this->messageAccompRepository = $messageAccompRepository;
+    }
+
     public function index()
     {
-        //
+        $messageAccomps = $this->messageAccompRepository->getPaginate($this->nbrPerPage);
+        $links = $messageAccomps->render();
+
+        return view('index', compact('messageAccomps', 'links'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view('create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function store(MessageAccompCreateRequest $request)
     {
-        //
+        $this->setAdmin($request);
+
+        $messageAccomp = $this->messageAccompRepository->store($request->all());
+
+        return redirect('messageAccomp')->withOk("L'utilisateur " . $messageAccomp->name . " a été créé.");
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        //
+        $messageAccomp = $this->messageAccompRepository->getById($id);
+
+        return view('show',  compact('messageAccomp'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
-        //
+        $messageAccomp = $this->messageAccompRepository->getById($id);
+
+        return view('edit',  compact('messageAccomp'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update(MessageAccompUpdateRequest $request, $id)
     {
-        //
+        $this->setAdmin($request);
+
+        $this->messageAccompRepository->update($id, $request->all());
+
+        return redirect('messageAccomp')->withOk("L'utilisateur " . $request->input('name') . " a été modifié.");
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        //
+        $this->messageAccompRepository->destroy($id);
+
+        return redirect()->back();
     }
+
+
+
 }

@@ -2,85 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\CodeReductionCreateRequest;
+use App\Http\Requests\CodeReductionUpdateRequest;
 
-use App\Http\Requests;
+use App\Repositories\CodeReductionRepository;
+
+use Illuminate\Http\Request;
 
 class CodeReductionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
+    protected $codeReductionRepository;
+
+    protected $nbrPerPage = 4;
+
+    public function __construct(CodeReductionRepository $codeReductionRepository)
+    {
+        $this->codeReductionRepository = $codeReductionRepository;
+    }
+
     public function index()
     {
-        //
+        $codeReductions = $this->codeReductionRepository->getPaginate($this->nbrPerPage);
+        $links = $codeReductions->render();
+
+        return view('index', compact('codeReductions', 'links'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view('create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function store(CodeReductionCreateRequest $request)
     {
-        //
+        $this->setAdmin($request);
+
+        $codeReduction = $this->codeReductionRepository->store($request->all());
+
+        return redirect('codeReduction')->withOk("L'utilisateur " . $codeReduction->name . " a été créé.");
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        //
+        $codeReduction = $this->codeReductionRepository->getById($id);
+
+        return view('show',  compact('codeReduction'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
-        //
+        $codeReduction = $this->codeReductionRepository->getById($id);
+
+        return view('edit',  compact('codeReduction'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update(CodeReductionUpdateRequest $request, $id)
     {
-        //
+        $this->setAdmin($request);
+
+        $this->codeReductionRepository->update($id, $request->all());
+
+        return redirect('codeReduction')->withOk("L'utilisateur " . $request->input('name') . " a été modifié.");
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        //
+        $this->codeReductionRepository->destroy($id);
+
+        return redirect()->back();
     }
+
+
+
 }

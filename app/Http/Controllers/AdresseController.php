@@ -2,85 +2,76 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\AdresseCreateRequest;
+use App\Http\Requests\AdresseUpdateRequest;
 
-use App\Http\Requests;
+use App\Repositories\AdresseRepository;
+
+use Illuminate\Http\Request;
 
 class AdresseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
+    protected $adresseRepository;
+
+    protected $nbrPerPage = 4;
+
+    public function __construct(AdresseRepository $adresseRepository)
+    {
+        $this->adresseRepository = $adresseRepository;
+    }
+
     public function index()
     {
-        //
+        $adresses = $this->adresseRepository->getPaginate($this->nbrPerPage);
+        $links = $adresses->render();
+
+        return view('index', compact('adresses', 'links'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        return view('create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function store(AdresseCreateRequest $request)
     {
-        //
+        $this->setAdmin($request);
+
+        $adresse = $this->adresseRepository->store($request->all());
+
+        return redirect('adresse')->withOk("L'utilisateur " . $adresse->name . " a été créé.");
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        //
+        $adresse = $this->adresseRepository->getById($id);
+
+        return view('show',  compact('adresse'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
-        //
+        $adresse = $this->adresseRepository->getById($id);
+
+        return view('edit',  compact('adresse'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update(AdresseUpdateRequest $request, $id)
     {
-        //
+        $this->setAdmin($request);
+
+        $this->adresseRepository->update($id, $request->all());
+
+        return redirect('adresse')->withOk("L'utilisateur " . $request->input('name') . " a été modifié.");
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        //
+        $this->adresseRepository->destroy($id);
+
+        return redirect()->back();
     }
+
+
 }
