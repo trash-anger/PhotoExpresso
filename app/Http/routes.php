@@ -12,7 +12,7 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/home');
 });
 
 
@@ -21,6 +21,8 @@ Route::group(['middleware' => 'web'], function () {
     Route::auth();
 
     Route::get('/home', 'HomeController@index');
+    Route::get('/homeAdmin','UserController@homeAdmin');
+    Route::get('/homeClient','UserController@homeClient');
 
     Route::resource('adresse', 'AdresseController');
     Route::resource('client', 'ClientController');

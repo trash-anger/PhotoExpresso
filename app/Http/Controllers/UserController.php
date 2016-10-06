@@ -73,6 +73,11 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-
+    public function homeAdmin(){
+        return view('user/homeAdmin');
+    }
+    public function homeClient(){
+        return view('user/homeClient');
+    }
 
 }
